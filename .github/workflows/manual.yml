@@ -1,7 +1,7 @@
 #
 # 手動実行ワークフロー
 #
-name: pypi
+name: manual workflow
 
 on:
   workflow_dispatch:
