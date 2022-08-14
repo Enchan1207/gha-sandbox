@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2
       - name: Check if the workflow was called from master branch
         run: |
           CURRENT=`git branch | grep "^*" | sed -e "s/^\* //"`
@@ -21,5 +22,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create Draft Release
+      - name: echoback
         run: echo "Hello from master branch!"
