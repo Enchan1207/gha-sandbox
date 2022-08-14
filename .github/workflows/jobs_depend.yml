@@ -19,23 +19,16 @@ jobs:
           CHECK="master"
           [ $CURRENT = $CHECK ]
 
-  get_currentversion:
+  publish_release:
     needs: branch_check
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
       - name: Get current version
         run: |
           VERSION="0.1.0"
           echo "current_full_version=${VERSION}" >> $GITHUB_ENV
 
-  publish_release:
-    needs: get_currentversion
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Create draft release
         id: create_release
         uses: actions/create-release@v1
