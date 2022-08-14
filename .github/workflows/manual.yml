@@ -1,0 +1,25 @@
+#
+# 手動実行ワークフロー
+#
+name: pypi
+
+on:
+  workflow_dispatch:
+
+jobs:
+  branch-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if the workflow was called from master branch
+        run: |
+          CURRENT=`git branch | grep "^*" | sed -e "s/^\* //"`
+          CHECK="master"
+          [ $CURRENT = $CHECK ]
+
+  echoback:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create Draft Release
+        run: echo "Hello from master branch!"
