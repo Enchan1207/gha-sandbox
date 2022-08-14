@@ -32,7 +32,7 @@ jobs:
           echo "current_full_version=${VERSION}" >> $GITHUB_ENV
 
   publish_release:
-    needs: branch_check
+    needs: get_currentversion
     runs-on: ubuntu-latest
 
     steps:
