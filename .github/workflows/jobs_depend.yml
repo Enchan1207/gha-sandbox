@@ -26,17 +26,15 @@ jobs:
     steps:
       - name: Get current version
         run: |
-          VERSION="0.1.0"
+          VERSION="1.0.0"
           echo "current_full_version=${VERSION}" >> $GITHUB_ENV
 
       - name: Create draft release
-        id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         with:
           tag_name: v${{ env.current_full_version }}
-          release_name: v${{ env.current_full_version }}
           draft: true
           prerelease: false
