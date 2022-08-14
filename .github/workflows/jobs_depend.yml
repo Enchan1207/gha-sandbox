@@ -7,21 +7,43 @@ on:
   workflow_dispatch:
 
 jobs:
-  branch-check:
+  branch_check:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Check if the workflow was called from master branch
         run: |
           CURRENT=`git branch | grep "^*" | sed -e "s/^\* //"`
           CHECK="master"
           [ $CURRENT = $CHECK ]
 
-  echoback:
-    needs: branch-check
+  get_currentversion:
+    needs: branch_check
     runs-on: ubuntu-latest
 
     steps:
-      - name: echoback
-        run: echo "Hello from master branch!"
+      - uses: actions/checkout@v2
+
+      - name: Get current version
+        run: |
+          VERSION="0.1.0"
+          echo "current_full_version=${VERSION}" >> $GITHUB_ENV
+
+  publish_release:
+    needs: branch_check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create draft release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        with:
+          tag_name: v${{ env.current_full_version }}
+          release_name: v${{ env.current_full_version }}
+          draft: true
+          prerelease: false
