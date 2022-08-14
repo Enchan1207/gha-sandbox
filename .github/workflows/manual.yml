@@ -19,6 +19,7 @@ jobs:
           [ $CURRENT = $CHECK ]
 
   echoback:
+    needs: branch-check
     runs-on: ubuntu-latest
 
     steps:
