@@ -1,0 +1,18 @@
+#
+# プレリリース時に走るワークフロー
+#
+
+name: on release
+
+on:
+  release:
+    types:
+      - prereleased
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to TestPyPI
+        run: echo "Pre-release!"

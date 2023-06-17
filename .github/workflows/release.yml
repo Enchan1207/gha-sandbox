@@ -1,0 +1,18 @@
+#
+# リリース時に走るワークフロー
+#
+
+name: on release
+
+on:
+  release:
+    types:
+      - released
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to PyPI
+        run: echo "Release!"
