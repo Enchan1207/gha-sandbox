@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Check if release is a draft
         id: check_draft
-        run: echo "::set-output name=is_draft::${{ github.event.release.draft }}"
+        run: echo "is_draft=${{ github.event.release.draft }}" >> $GITHUB_OUTPUT
 
       - name: Deploy to TestPyPI
         if: steps.check_draft.outputs.is_draft == 'true'
