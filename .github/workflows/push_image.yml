@@ -1,7 +1,7 @@
 #
 # イメージ作成
 #
-name: draft release
+name: push image
 
 on: push
 
