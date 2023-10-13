@@ -8,6 +8,9 @@ on: push
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
 
     steps:
       - uses: actions/checkout@v2
@@ -16,9 +19,10 @@ jobs:
         run: docker build -t enchan/test_mini_image:latest -f test.Dockerfile .
 
       - name: login to GitHub container registry
-        run: echo "${GH_PAT}" | docker login ghcr.io -u Enchan1207 --password-stdin
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
       - name: push to GitHub container registry
-        run: docker push ghcr.io/Enchan1207/gha-sandbox:v0.1.0
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/test_mini_image
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          docker push "ghcr.io/$IMAGE_ID:v0.1.0"
