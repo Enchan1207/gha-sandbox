@@ -15,5 +15,5 @@ jobs:
         with:
           name: draft
           draft: true
-          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-          files: README.md
+          # token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          files: ./README.md
