@@ -1,0 +1,19 @@
+#
+# リリースドラフト作成
+#
+name: draft release
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: draft release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: draft
+          draft: true
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          files: README.md
