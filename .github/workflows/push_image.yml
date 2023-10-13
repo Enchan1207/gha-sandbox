@@ -16,7 +16,7 @@ jobs:
         run: docker build -t enchan/test_mini_image:latest -f test.Dockerfile .
 
       - name: login to GitHub container registry
-        run: echo "${GH_PAT}" | docker login ghcr.io -u peaceiris --password-stdin
+        run: echo "${GH_PAT}" | docker login ghcr.io -u Enchan1207 --password-stdin
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
 
