@@ -10,12 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if the workflow was called from master branch
+      - name: get latest release asset url
         run: |
-          gh api \
+          LATEST_RELEASE_INFO=$(gh api \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/$REPOSITORY/releases/latest
+          /repos/$REPOSITORY/releases/latest)
+          ASSET_URL=`echo $LATEST_RELEASE_INFO | jq ".assets_url"`
+          ASSET_INFO=`curl $ASSET_URL`
+          echo $ASSET_INFO | jq
         env:
           REPOSITORY: Enchan1207/rpi-buildroot
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
