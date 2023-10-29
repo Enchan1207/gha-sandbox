@@ -10,6 +10,10 @@ env:
   BUILDROOT_IMAGE_FILE: enchan1207-buildroot
 
 inputs:
+  github_token:
+    description: "GitHub Token for gh CLI"
+    required: true
+
   config_file:
     description: "Path to Buildroot config file"
     required: true
@@ -73,7 +77,7 @@ runs:
       shell: bash
       run: ./bootstrap.sh
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
 
     # ビルドしたイメージを出力し、キャッシュ
     - name: write built image to file
