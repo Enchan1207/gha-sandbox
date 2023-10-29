@@ -74,7 +74,7 @@ runs:
           echo "overlayfs_rootdir=$(realpath ${{ inputs.overlayfs_rootdir }})" >> "$GITHUB_OUTPUT"
         fi
 
-        mkdir -p "$(realpath ${{ inputs.workdir }})"
+        mkdir -p `realpath ${{ inputs.workdir }}`
 
     # 1. Buildrootイメージの準備
     #
