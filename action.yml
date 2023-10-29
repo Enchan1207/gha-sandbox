@@ -25,7 +25,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: |
-      pwd
-      mkdir dir_by_action
-      cat ${{ inputs.config_file }} > dir_by_action/br2.config
+    - name: create file from action input
+      run: |
+        pwd
+        mkdir dir_by_action
+        cat ${{ inputs.config_file }} > dir_by_action/br2.config
