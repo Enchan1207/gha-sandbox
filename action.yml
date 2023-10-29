@@ -15,9 +15,9 @@ inputs:
     required: true
 
   workdir:
-    description: "Buildroot working directory (default: /(workspacedir)/rpi-buildroot)"
+    description: "Buildroot working directory (default: ~/rpi-buildroot)"
     required: false
-    default: "${{ github.workspace }}/rpi-buildroot"
+    default: "~/rpi-buildroot"
 
   pre_build_script:
     description: "Path to script to run in container before build (e.g. invoke utils/scanpypi)"
@@ -37,7 +37,6 @@ runs:
     - name: Check passed arguments
       id: args
       shell: bash
-      working-directory: ${{ inputs.workdir }}
       run: |
         if [ ! -e "${{ inputs.config_file }}" ]; then
           echo "Specified Buildroot configuration file not exists: \"${{ inputs.config_file }}\""
@@ -74,6 +73,8 @@ runs:
           fi
           echo "overlayfs_rootdir=$(realpath ${{ inputs.overlayfs_rootdir }})" >> "$GITHUB_OUTPUT"
         fi
+
+        mkdir -p "$(realpath ${{ inputs.workdir }})"
 
     # 1. Buildrootイメージの準備
     #
