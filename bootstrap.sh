@@ -16,29 +16,36 @@ baseImageName=enchan1207/buildroot_base
 baseImageInfo=`docker images --format json | jq -r "select(.Repository == \"${baseImageName}\")"`
 if [ -z "$baseImageInfo" ]; then
     echo "Buildroot base image (${baseImageName}) not found. Try to pull..."
-    docker pull $baseImageName > /dev/null 2>&1
+
+    pullLogFile=pull.log
+    docker pull $baseImageName > $pullLogFile 2>&1
     if [ $? -ne 0 ]; then
-        echo "An unexpected error occured while pull Buildroot base image."
+        echo "An unexpected error occured while pull Buildroot base image:"
+        cat $pullLogFile
         exit 1
     fi
+    rm $pullLogFile
 fi
 
 # SDKをダウンロード
-LATEST_RELEASE_INFO=$(gh api \
+latestReleaseInfo=$(gh api \
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
     /repos/Enchan1207/rpi-buildroot/releases/latest)
-ASSET_URL=`echo $LATEST_RELEASE_INFO | jq -r ".assets_url"`
-ASSET_INFO=`curl $ASSET_URL`
-SDK_URL=`echo $ASSET_INFO | jq -r ".[] | select(.name == \"sdk.tar.gz\") .browser_download_url"`
-wget -q $SDK_URL
+assetURL=`echo $latestReleaseInfo | jq -r ".assets_url"`
+assetInfo=`curl $assetURL`
+sdkURL=`echo $assetInfo | jq -r ".[] | select(.name == \"sdk.tar.gz\") .browser_download_url"`
+wget -q $sdkURL
 
 # Dockerイメージをビルド
-docker build -t enchan1207/buildroot -f buildroot.Dockerfile . > /dev/null 2>&1
+buildLogFile=build.log
+docker build -t enchan1207/buildroot -f buildroot.Dockerfile . > $buildLogFile 2>&1
 if [ $? -ne 0 ]; then
-    echo "An unexpected error occured while build Buildroot image."
+    echo "An unexpected error occured while build Buildroot image:"
+    cat $buildLogFile
     exit 1
 fi
+rm $buildLogFile
 
 # キャッシュを削除
 rm sdk.tar.gz
