@@ -101,7 +101,7 @@ runs:
       if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
       shell: bash
       working-directory: ${{ steps.args.outputs.workdir }}
-      run: ./bootstrap.sh
+      run: ${{ github.workspace }}/bootstrap.sh
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
 
