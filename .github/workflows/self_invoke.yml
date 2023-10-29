@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - id: foo
-        uses: Enchan1207/gha-sandbox
+
+      - uses: Enchan1207/gha-sandbox@3a713fb1582b8b7787e67cd46dcda2acfcf26d56
         with:
           config_file: README.md
