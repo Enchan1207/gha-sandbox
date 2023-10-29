@@ -42,7 +42,7 @@ runs:
           echo "Specified Buildroot configuration file not exists: \"${{ inputs.config_file }}\""
           exit 1
         fi
-        echo "config_file=$(realpath ${{ inputs.config_file }})" >> "$GITHUB_OUTPUT"
+        echo "config_file=$(realpath "${{ inputs.config_file }}")" >> "$GITHUB_OUTPUT"
 
         if [ -n "${{ inputs.pre_build_script }}"];then
           echo "has_pre_build_script=true" >> "$GITHUB_OUTPUT"
@@ -51,7 +51,7 @@ runs:
             echo "Specified pre-build script not exists: \"${{ inputs.pre_build_script }}\""
             exit 1
           fi
-          echo "pre_build_script=$(realpath ${{ inputs.pre_build_script }})" >> "$GITHUB_OUTPUT"
+          echo "pre_build_script=$(realpath "${{ inputs.pre_build_script }}")" >> "$GITHUB_OUTPUT"
         fi
 
         if [ -n "${{ inputs.post_build_script }}"];then
@@ -61,7 +61,7 @@ runs:
             echo "Specified post-build script not exists: \"${{ inputs.post_build_script }}\""
             exit 1
           fi
-          echo "post_build_script=$(realpath ${{ inputs.post_build_script }})" >> "$GITHUB_OUTPUT"
+          echo "post_build_script=$(realpath "${{ inputs.post_build_script }}")" >> "$GITHUB_OUTPUT"
         fi
 
         if [ -n "${{ inputs.overlayfs_rootdir }}"];then
@@ -71,10 +71,11 @@ runs:
             echo "Specified OverlayFS directory not exists: \"${{ inputs.overlayfs_rootdir }}\""
             exit 1
           fi
-          echo "overlayfs_rootdir=$(realpath ${{ inputs.overlayfs_rootdir }})" >> "$GITHUB_OUTPUT"
+          echo "overlayfs_rootdir=$(realpath "${{ inputs.overlayfs_rootdir }}")" >> "$GITHUB_OUTPUT"
         fi
 
-        mkdir -p `realpath ${{ inputs.workdir }}`
+        mkdir -p `realpath "${{ inputs.workdir }}"`
+        echo "workdir=$(realpath "${{ inputs.workdir }}")" >> "$GITHUB_OUTPUT"
 
     # 1. Buildrootイメージの準備
     #
@@ -86,19 +87,19 @@ runs:
       id: restore-buildroot-image
       uses: actions/cache/restore@v3
       with:
-        path: "${{ inputs.workdir }}/enchan1207-buildroot"
+        path: "${{ steps.args.outputs.workdir }}/enchan1207-buildroot"
         key: buildroot_docker_image
 
     # キャッシュされていれば読み込む, そうでなければビルドする
     - name: load image if cached
       if: steps.restore-buildroot-image.outputs.cache-hit == 'true'
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: docker load -i "enchan1207-buildroot"
     - name: build Buildroot image
       if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: ./bootstrap.sh
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
@@ -107,13 +108,13 @@ runs:
     - name: write built image to file
       if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: docker save "enchan1207/buildroot" -o "enchan1207-buildroot"
     - name: cache Buildroot image
       if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
       uses: actions/cache/save@v3
       with:
-        path: "${{ inputs.workdir }}/enchan1207-buildroot"
+        path: "${{ steps.args.outputs.workdir }}/enchan1207-buildroot"
         key: buildroot_docker_image
 
     # 2. ビルドの準備
@@ -123,7 +124,7 @@ runs:
     # リポジトリにある構成ファイルを、キャッシュパスを書き換えてBuildrootディレクトリにコピー
     - name: copy configuration file
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: |
         mkdir -p dist
         cat "${{ steps.args.outputs.config_file }}" | sed "s/^BR2_CCACHE_DIR=.*$/BR2_CCACHE_DIR=\"\/cache\"/" > dist/.config
@@ -134,12 +135,12 @@ runs:
       uses: actions/cache/restore@v3
       with:
         path: |
-          ${{ inputs.workdir }}/dist.tar.gz
-          ${{ inputs.workdir }}/cache.tar.gz
+          ${{ steps.args.outputs.workdir }}/dist.tar.gz
+          ${{ steps.args.outputs.workdir }}/cache.tar.gz
         key: buildroot_build_cache
     - name: extract build cache
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: |
         if [ -e cache.tar.gz -a -e dist.tar.gz ]; then 
           file dist.tar.gz cache.tar.gz
@@ -156,7 +157,7 @@ runs:
     - name: boot Buildroot container
       id: br_container
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: |
         containerID=`docker run --rm -id -v ./dist:/dist -v ./cache:/cache enchan1207/buildroot`
         echo "Buildroot container started: $containerID"
@@ -166,7 +167,7 @@ runs:
     - name: exec pre-build script
       if: ${{ steps.args.outputs.has_pre_build_script }} == 'true'
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: |
         echo "Exec pre-build script"
         docker cp \
@@ -178,7 +179,7 @@ runs:
     # イメージをビルド
     - name: build Raspberry Pi image
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: |
         docker exec ${{ steps.br_container.outputs.container_id }} make O=/dist show-info
 
@@ -186,7 +187,7 @@ runs:
     - name: exec post-build script
       if: ${{ steps.args.outputs.has_post_build_script }} == 'true'
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: |
         echo "Exec post-build script"
         docker cp \
@@ -203,7 +204,7 @@ runs:
     #　パーミッションを戻し、キャッシュを圧縮
     - name: cache preparation
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: |
         echo "Prepare for cache..."
         sudo chown -R runner:runner dist
@@ -216,7 +217,7 @@ runs:
     - name: remove existing cache
       if: steps.restore-build-cache.outputs.cache-hit == 'true'
       shell: bash
-      working-directory: ${{ inputs.workdir }}
+      working-directory: ${{ steps.args.outputs.workdir }}
       run: |
         echo "Remove existing Buildroot build cache..."
         gh api \
@@ -231,6 +232,6 @@ runs:
       uses: actions/cache/save@v3
       with:
         path: |
-          ${{ inputs.workdir }}/dist.tar.gz
-          ${{ inputs.workdir }}/cache.tar.gz
+          ${{ steps.args.outputs.workdir }}/dist.tar.gz
+          ${{ steps.args.outputs.workdir }}/cache.tar.gz
         key: buildroot_build_cache
