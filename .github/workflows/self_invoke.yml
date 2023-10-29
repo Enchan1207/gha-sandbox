@@ -14,11 +14,4 @@ jobs:
       - uses: Enchan1207/gha-sandbox@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          config_file: README.md
-
-      - name: check files
-        run: |
-          pwd
-          ls -la
-          cd dir_by_action
-          ls -la
+          config_file: buildroot.config
