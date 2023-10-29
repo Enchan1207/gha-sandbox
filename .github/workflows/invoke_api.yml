@@ -3,7 +3,7 @@
 #
 name: invoke GitHub API using GitHub CLI
 
-on: push
+on: workflow_dispatch # push
 
 jobs:
   invoke_api:
@@ -19,7 +19,7 @@ jobs:
           ASSET_URL=`echo $LATEST_RELEASE_INFO | jq -r ".assets_url"`
           ASSET_INFO=`curl $ASSET_URL`
           SDK_URL=`echo $ASSET_INFO | jq -r ".[] | select(.name == \"sdk.tar.gz\") .browser_download_url"`
-          wget $SDK_URL
+          wget -q $SDK_URL
         env:
           REPOSITORY: Enchan1207/rpi-buildroot
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

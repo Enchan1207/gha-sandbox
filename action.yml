@@ -1,0 +1,31 @@
+#
+# GitHub Action for create Buildroot image of Raspberry Pi
+#
+
+name: "create-custom-rpi-image"
+description: "Create custom Raspberry Pi image using Buildroot"
+
+inputs:
+  config_file:
+    description: "Path to Buildroot config file"
+    required: true
+
+  pre-build-script:
+    description: "Path to script to run in container before build (e.g. invoke utils/scanpypi)"
+    required: false
+
+  post-build-script:
+    description: "Path to script to run in container after build (e.g. cleaning up build directory)"
+    required: false
+
+  overlayfs_rootdir:
+    description: "Path to RootFS-overlay directory"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - run: |
+      pwd
+      mkdir dir_by_action
+      cat ${{ inputs.config_file }} > dir_by_action/br2.config

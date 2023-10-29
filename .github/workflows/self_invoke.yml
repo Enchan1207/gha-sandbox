@@ -1,0 +1,16 @@
+#
+# 自分自身をアクションとして呼び出す
+#
+
+on: push
+
+jobs:
+  invoke_api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - id: foo
+        uses: Enchan1207/gha-sandbox
+        with:
+          config_file: README.md
