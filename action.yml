@@ -44,38 +44,39 @@ runs:
         fi
         echo "config_file=$(realpath "${{ inputs.config_file }}")" >> "$GITHUB_OUTPUT"
 
-        if [ -n "${{ inputs.pre_build_script }}"];then
+        if [ -n "${{ inputs.pre_build_script }}" ]; then
           echo "has_pre_build_script=true" >> "$GITHUB_OUTPUT"
 
-          if [ ! -e "${{ inputs.pre_build_script }}"]; then
+          if [ ! -e "${{ inputs.pre_build_script }}" ];  then
             echo "Specified pre-build script not exists: \"${{ inputs.pre_build_script }}\""
             exit 1
           fi
           echo "pre_build_script=$(realpath "${{ inputs.pre_build_script }}")" >> "$GITHUB_OUTPUT"
         fi
 
-        if [ -n "${{ inputs.post_build_script }}"];then
+        if [ -n "${{ inputs.post_build_script }}" ]; then
           echo "has_post_build_script=true" >> "$GITHUB_OUTPUT"
 
-          if [ ! -e "${{ inputs.post_build_script }}"]; then
+          if [ ! -e "${{ inputs.post_build_script }}" ];  then
             echo "Specified post-build script not exists: \"${{ inputs.post_build_script }}\""
             exit 1
           fi
           echo "post_build_script=$(realpath "${{ inputs.post_build_script }}")" >> "$GITHUB_OUTPUT"
         fi
 
-        if [ -n "${{ inputs.overlayfs_rootdir }}"];then
+        if [ -n "${{ inputs.overlayfs_rootdir }}" ]; then
           echo "has_overlayfs_rootdir=true" >> "$GITHUB_OUTPUT"
 
-          if [ ! -e "${{ inputs.overlayfs_rootdir }}"]; then
+          if [ ! -e "${{ inputs.overlayfs_rootdir }}" ];  then
             echo "Specified OverlayFS directory not exists: \"${{ inputs.overlayfs_rootdir }}\""
             exit 1
           fi
           echo "overlayfs_rootdir=$(realpath "${{ inputs.overlayfs_rootdir }}")" >> "$GITHUB_OUTPUT"
         fi
 
-        mkdir -p `realpath "${{ inputs.workdir }}"`
-        echo "workdir=$(realpath "${{ inputs.workdir }}")" >> "$GITHUB_OUTPUT"
+        absWorkdirPath=`realpath -m "${{ inputs.workdir }}"`
+        mkdir -p $absWorkdirPath
+        echo "workdir=$absWorkdirPath" >> "$GITHUB_OUTPUT"
 
     # 1. Buildrootイメージの準備
     #
