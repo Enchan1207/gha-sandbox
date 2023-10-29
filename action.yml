@@ -15,9 +15,9 @@ inputs:
     required: true
 
   workdir:
-    description: "Buildroot working directory"
+    description: "Buildroot working directory (default: /(workspacedir)/rpi-buildroot)"
     required: false
-    default: "$HOME/rpi-buildroot"
+    default: "${{ github.workspace }}/rpi-buildroot"
 
   pre_build_script:
     description: "Path to script to run in container before build (e.g. invoke utils/scanpypi)"
