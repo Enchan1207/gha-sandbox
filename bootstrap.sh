@@ -12,6 +12,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Buildrootベースイメージを探し、なければpull
+echo "Looking for Buildroot base image"
 baseImageName=enchan1207/buildroot_base
 baseImageInfo=`docker images --format json | jq -r "select(.Repository == \"${baseImageName}\")"`
 if [ -z "$baseImageInfo" ]; then
@@ -28,6 +29,7 @@ if [ -z "$baseImageInfo" ]; then
 fi
 
 # SDKをダウンロード
+echo "Download Buildroot external toolchain for Raspberry Pi 3"
 latestReleaseInfo=$(gh api \
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -38,6 +40,7 @@ sdkURL=`echo $assetInfo | jq -r ".[] | select(.name == \"sdk.tar.gz\") .browser_
 wget -q $sdkURL
 
 # Dockerイメージをビルド
+echo "Build Buildroot image"
 buildLogFile=build.log
 docker build -t enchan1207/buildroot -f buildroot.Dockerfile . > $buildLogFile 2>&1
 if [ $? -ne 0 ]; then
