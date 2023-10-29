@@ -31,7 +31,7 @@ LATEST_RELEASE_INFO=$(gh api \
 ASSET_URL=`echo $LATEST_RELEASE_INFO | jq -r ".assets_url"`
 ASSET_INFO=`curl $ASSET_URL`
 SDK_URL=`echo $ASSET_INFO | jq -r ".[] | select(.name == \"sdk.tar.gz\") .browser_download_url"`
-wget $SDK_URL
+wget -q $SDK_URL
 
 # Dockerイメージをビルド
 docker build -t enchan1207/buildroot -f buildroot.Dockerfile . > /dev/null 2>&1
