@@ -5,16 +5,20 @@
 name: "create-custom-rpi-image"
 description: "Create custom Raspberry Pi image using Buildroot"
 
+env:
+  BUILDROOT_IMAGE_TAG: enchan1207/buildroot
+  BUILDROOT_IMAGE_FILE: enchan1207-buildroot
+
 inputs:
   config_file:
     description: "Path to Buildroot config file"
     required: true
 
-  pre-build-script:
+  pre_build_script:
     description: "Path to script to run in container before build (e.g. invoke utils/scanpypi)"
     required: false
 
-  post-build-script:
+  post_build_script:
     description: "Path to script to run in container after build (e.g. cleaning up build directory)"
     required: false
 
@@ -25,9 +29,61 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: create file from action input
-      run: |
-        pwd
-        mkdir dir_by_action
-        cat ${{ inputs.config_file }} > dir_by_action/br2.config
+    - name: Check passed arguments
       shell: bash
+      run: |
+        if [ ! -e "${{ inputs.config_file }}" ]; then
+          echo "Specified Buildroot configuration file not exists: \"${{ inputs.config_file }}\""
+          exit 1
+        fi
+        if [ -n "${{ inputs.pre_build_script }}" -a ! -e "${{ inputs.pre_build_script }}"]; then
+          echo "Specified pre-build script not exists: \"${{ inputs.pre_build_script }}\""
+          exit 1
+        fi
+        if [ -n "${{ inputs.post_build_script }}" -a ! -e "${{ inputs.post_build_script }}"]; then
+          echo "Specified post-build script not exists: \"${{ inputs.post_build_script }}\""
+          exit 1
+        fi
+        if [ -n "${{ inputs.overlayfs_rootdir }}" -a ! -e "${{ inputs.overlayfs_rootdir }}"]; then
+          echo "Specified RootFS-overlay directory not exists: \"${{ inputs.overlayfs_rootdir }}\""
+          exit 1
+        fi
+
+    # 1. Buildrootイメージの準備
+    #
+    # Buildrootを最低限動作させるためのイメージ (enchan1207/buildroot_base) をもとに、
+    # Raspberry Pi 3用にビルドされたツールチェーンを同梱したイメージを作成します。
+
+    # イメージをキャッシュからリストア
+    - name: restore cached Buildroot image
+      id: restore-buildroot-image
+      uses: actions/cache/restore@v3
+      with:
+        path: ${{ env.BUILDROOT_IMAGE_FILE }}
+        key: ${{ env.BUILDROOT_IMAGE_FILE }}
+
+    # キャッシュされていれば読み込む, そうでなければビルドする
+    - name: load image if cached
+      if: steps.restore-buildroot-image.outputs.cache-hit == 'true'
+      shell: bash
+      run: docker load -i ${{ env.BUILDROOT_IMAGE_FILE }}
+
+    - name: build Buildroot image
+      if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
+      shell: bash
+      run: ./bootstrap.sh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # ビルドしたイメージを出力し、キャッシュ
+    - name: write built image to file
+      if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
+      shell: bash
+      run: docker save ${{ env.BUILDROOT_IMAGE_TAG }} -o ${{ env.BUILDROOT_IMAGE_FILE }}
+
+    - name: cache Buildroot image
+      if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v3
+      with:
+        path: ${{ env.BUILDROOT_IMAGE_FILE }}
+        key: ${{ env.BUILDROOT_IMAGE_FILE }}
