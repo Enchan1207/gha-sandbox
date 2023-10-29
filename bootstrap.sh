@@ -16,7 +16,11 @@ baseImageName=enchan1207/buildroot_base
 baseImageInfo=`docker images --format json | jq -r "select(.Repository == \"${baseImageName}\")"`
 if [ -z "$baseImageInfo" ]; then
     echo "Buildroot base image (${baseImageName}) not found. Try to pull..."
-    docker pull $baseImageName || exit 1
+    docker pull $baseImageName > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "An unexpected error occured while pull Buildroot base image."
+        exit 1
+    fi
 fi
 
 # SDKをダウンロード
@@ -30,7 +34,11 @@ SDK_URL=`echo $ASSET_INFO | jq -r ".[] | select(.name == \"sdk.tar.gz\") .browse
 wget $SDK_URL
 
 # Dockerイメージをビルド
-docker build -t enchan1207/buildroot -f buildroot.Dockerfile .
+docker build -t enchan1207/buildroot -f buildroot.Dockerfile . > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "An unexpected error occured while build Buildroot image."
+    exit 1
+fi
 
 # キャッシュを削除
 rm sdk.tar.gz

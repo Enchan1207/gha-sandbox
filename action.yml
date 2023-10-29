@@ -5,10 +5,6 @@
 name: "create-custom-rpi-image"
 description: "Create custom Raspberry Pi image using Buildroot"
 
-env:
-  BUILDROOT_IMAGE_TAG: enchan1207/buildroot
-  BUILDROOT_IMAGE_FILE: enchan1207-buildroot
-
 inputs:
   github_token:
     description: "GitHub Token for gh CLI"
@@ -63,14 +59,14 @@ runs:
       id: restore-buildroot-image
       uses: actions/cache/restore@v3
       with:
-        path: ${{ env.BUILDROOT_IMAGE_FILE }}
-        key: ${{ env.BUILDROOT_IMAGE_FILE }}
+        path: "enchan1207-buildroot"
+        key: "enchan1207-buildroot"
 
     # キャッシュされていれば読み込む, そうでなければビルドする
     - name: load image if cached
       if: steps.restore-buildroot-image.outputs.cache-hit == 'true'
       shell: bash
-      run: docker load -i ${{ env.BUILDROOT_IMAGE_FILE }}
+      run: docker load -i "enchan1207-buildroot"
 
     - name: build Buildroot image
       if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
@@ -83,11 +79,11 @@ runs:
     - name: write built image to file
       if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
       shell: bash
-      run: docker save ${{ env.BUILDROOT_IMAGE_TAG }} -o ${{ env.BUILDROOT_IMAGE_FILE }}
+      run: docker save "enchan1207/buildroot" -o "enchan1207-buildroot"
 
     - name: cache Buildroot image
       if: steps.restore-buildroot-image.outputs.cache-hit != 'true'
       uses: actions/cache/save@v3
       with:
-        path: ${{ env.BUILDROOT_IMAGE_FILE }}
-        key: ${{ env.BUILDROOT_IMAGE_FILE }}
+        path: "enchan1207-buildroot"
+        key: "enchan1207-buildroot"
