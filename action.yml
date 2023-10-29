@@ -14,6 +14,11 @@ inputs:
     description: "Path to Buildroot config file"
     required: true
 
+  output_path:
+    description: "Output destination of the built image (default: (workspace)/sdcard.img)"
+    required: false
+    default: "sdcard.img"
+
   workdir:
     description: "Buildroot working directory (default: ~/rpi-buildroot)"
     required: false
@@ -77,6 +82,10 @@ runs:
         absWorkdirPath=`realpath -m "${{ inputs.workdir }}"`
         mkdir -p $absWorkdirPath
         echo "workdir=$absWorkdirPath" >> "$GITHUB_OUTPUT"
+
+        absOutputPath=`realpath -m "${{ inputs.output_path }}"`
+        mkdir -p $absOutputPath
+        echo "output_path=$absOutputPath" >> "$GITHUB_OUTPUT"
 
     # 1. Buildrootイメージの準備
     #
@@ -180,12 +189,18 @@ runs:
           > /dev/null 2>&1
         docker exec ${{ steps.br_container.outputs.container_id }} /buildroot/pre-build.sh
 
-    # イメージをビルド
+    # Raspberry Piイメージをビルドし、結果を取り出す
     - name: build Raspberry Pi image
       shell: bash
       working-directory: ${{ steps.args.outputs.workdir }}
       run: |
-        docker exec ${{ steps.br_container.outputs.container_id }} make O=/dist show-info
+        docker exec ${{ steps.br_container.outputs.container_id }} make O=/dist
+    - name: take out built raspberry pi image
+      shell: bash
+      working-directory: ${{ steps.args.outputs.workdir }}
+      run: |
+        sudo mv dist/images/sdcard.img ${{ steps.args.outputs.output_path }}
+        sudo chown -R runner:runner ${{ steps.args.outputs.output_path }}
 
     # ポストビルドスクリプトがある場合はコンテナにコピーして実行
     - name: exec post-build script
