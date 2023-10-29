@@ -5,7 +5,7 @@
 on: push
 
 jobs:
-  invoke_api:
+  self_invocation:
     runs-on: ubuntu-latest
 
     steps:
