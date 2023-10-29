@@ -166,10 +166,13 @@ runs:
 
     # プレビルドスクリプトがある場合はコンテナにコピーして実行
     - name: exec pre-build script
-      if: ${{ steps.args.outputs.has_pre_build_script }} == 'true'
       shell: bash
       working-directory: ${{ steps.args.outputs.workdir }}
       run: |
+        if [ "${{ steps.args.outputs.has_pre_build_script }}" != "true" ]; then
+          exit 0
+        fi
+
         echo "Exec pre-build script"
         docker cp \
           ${{ steps.args.outputs.pre_build_script }} \
@@ -186,10 +189,13 @@ runs:
 
     # ポストビルドスクリプトがある場合はコンテナにコピーして実行
     - name: exec post-build script
-      if: ${{ steps.args.outputs.has_post_build_script }} == 'true'
       shell: bash
       working-directory: ${{ steps.args.outputs.workdir }}
       run: |
+        if [ "${{ steps.args.outputs.has_post_build_script }}" != "true" ]; then
+          exit 0
+        fi
+
         echo "Exec post-build script"
         docker cp \
           ${{ steps.args.outputs.post_build_script }} \
