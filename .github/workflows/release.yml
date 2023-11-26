@@ -66,4 +66,4 @@ jobs:
           git merge ${{ github.ref }} -m "[Update] new release: $version"
 
       - name: push
-        run: git push --set-upstream origin $branchName
+        run: git push origin ${{ steps.get_branch.outputs.name }}
