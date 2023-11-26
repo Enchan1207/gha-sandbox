@@ -39,34 +39,7 @@ jobs:
             echo "::error::ref $githubRef is not valid."
             exit 1
           fi
-          echo "ref=$githubRef" >> "$GITHUB_OUTPUT"
           echo "branch_name=$branchName" >> "$GITHUB_OUTPUT"
 
-      - name: switch and pull to specified release branch
-        run: |
-          branchName=${{ steps.release_info.outputs.branch_name }}
-          git fetch origin $branchName && isRemoteExists=1 || isRemoteExists=0
-          if [ $isRemoteExists -eq 1 ]; then
-            echo "Remote branch $branchName already exists. switching..."
-            git switch $branchName
-            git pull origin $branchName
-            exit 0
-          fi
-          git switch $branchName && isLocalExists=1 || isLocalExists=0
-          if [ $isLocalExists -eq 1 ]; then
-            echo "Local branch $branchName already exists."
-            exit 0
-          fi
-          git switch -c $branchName
-          echo "Switched new branch $branchName"
-
-      - name: merge ref and commit
-        run: |
-          version=$( echo "${{ steps.release_info.outputs.ref }}" \
-            | sed -rn "/${{ env.release_version_pattern }}/p" \
-            | sed -r "s/${{ env.release_version_pattern }}/\1/" )
-          git fetch
-          git merge --allow-unrelated-histories -m "[Update] new release: $version" ${{ steps.release_info.outputs.ref }}
-
-      - name: push
-        run: git push origin ${{ steps.release_info.outputs.branch_name }}
+      - name: push to main-version branch
+        run: git push -f origin "HEAD:refs/heads/${{ steps.release_info.outputs.branch_name }}"
