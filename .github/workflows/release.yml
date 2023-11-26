@@ -50,12 +50,12 @@ jobs:
             git switch $branchName
             exit 0
           fi
-          git checkout $branchName && isLocalExists=1 || isLocalExists=0
+          git switch $branchName && isLocalExists=1 || isLocalExists=0
           if [ $isLocalExists -eq 1 ]; then
             echo "Local branch $branchName already exists."
             exit 0
           fi
-          git checkout -b $branchName
+          git switch -c $branchName
           echo "Switched new branch $branchName"
 
       - name: merge ref and commit
