@@ -28,20 +28,17 @@ jobs:
       - name: identify branch name from ref
         id: get_branch
         run: |
+          echo "${{ github.ref }}"
           branchName=$( echo "${{ github.ref }}" \
             | sed -rn "/${{ env.release_branch_pattern }}/p" \
             | sed -r "s/${{ env.release_branch_pattern }}/\1/" )
-          echo "name=$branchName" >> "$GITHUB_OUTPUT"
-
-      - name: check whether branch name is valid
-        run: |
-          branchName=${{ steps.get_branch.outputs.name }}
           if [ -n "$branchName" ]; then
             echo "switch to branch $branchName (from ref ${{ github.ref }})"
           else
             echo "::error::ref ${{ github.ref }} is not valid."
             exit 1
           fi
+          echo "name=$branchName" >> "$GITHUB_OUTPUT"
 
       - name: switch and pull to specified release branch
         run: |
