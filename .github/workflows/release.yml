@@ -46,8 +46,8 @@ jobs:
           git fetch origin $branchName && isRemoteExists=1 || isRemoteExists=0
           if [ $isRemoteExists -eq 1 ]; then
             echo "Remote branch $branchName already exists. switching..."
-            git pull origin $branchName
             git switch $branchName
+            git pull origin $branchName
             exit 0
           fi
           git switch $branchName && isLocalExists=1 || isLocalExists=0
