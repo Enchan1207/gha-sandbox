@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: setup git
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
