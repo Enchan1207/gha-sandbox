@@ -9,10 +9,63 @@ on:
     types:
       - released
 
+env:
+  release_version_pattern: "^refs\/tags\/(v[1-9]\.[0-9]\.[0-9])$"
+  release_branch_pattern: "^refs\/tags\/(v[1-9])\.[0-9]\.[0-9]$"
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Show release ref
-        run: echo "::notice::Release ref;${{ github.ref }}"
+      - name: setup git
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: identify branch name from ref
+        id: get_branch
+        run: |
+          branchName=$( echo "${{ github.ref }}" \
+            | sed -rn "/${{ env.release_branch_pattern }}/p" \
+            | sed -r "s/${{ env.release_branch_pattern }}/\1/" )
+          echo "name=$branchName" >> "$GITHUB_OUTPUT"
+
+      - name: check whether branch name is valid
+        run: |
+          branchName=${{ steps.get_branch.outputs.name }}
+          if [ -n "$branchName" ]; then
+            echo "switch to branch $branchName (from ref ${{ github.ref }})"
+          else
+            echo "::error::ref ${{ github.ref }} is not valid."
+            exit 1
+          fi
+
+      - name: switch and pull to specified release branch
+        run: |
+          branchName=${{ steps.get_branch.outputs.name }}
+          git fetch origin $branchName && isRemoteExists=1 || isRemoteExists=0
+          if [ $isRemoteExists -eq 1 ]; then
+            echo "Remote branch $branchName already exists. switching..."
+            git pull origin $branchName
+            git switch $branchName
+            exit 0
+          fi
+          git checkout $branchName && isLocalExists=1 || isLocalExists=0
+          if [ $isLocalExists -eq 1 ]; then
+            echo "Local branch $branchName already exists."
+            exit 0
+          fi
+          git checkout -b $branchName
+          echo "Switched new branch $branchName"
+
+      - name: merge ref and commit
+        run: |
+          version=$( echo "${{ github.ref }}" \
+            | sed -rn "/${{ env.release_version_pattern }}/p" \
+            | sed -r "s/${{ env.release_version_pattern }}/\1/" )
+          git merge --no-commit ${{ github.ref }}
+          git commit -m "[Update] new release: $version"
+      
+      - name: push
+        run: git push origin $branchName
