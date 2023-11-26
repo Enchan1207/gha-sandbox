@@ -63,7 +63,7 @@ jobs:
           version=$( echo "${{ github.ref }}" \
             | sed -rn "/${{ env.release_version_pattern }}/p" \
             | sed -r "s/${{ env.release_version_pattern }}/\1/" )
-          git merge ${{ github.ref }} -m "[Update] new release: $version"
+          git merge --allow-unrelated-histories -m "[Update] new release: $version" ${{ github.ref }}
 
       - name: push
         run: git push origin ${{ steps.get_branch.outputs.name }}
