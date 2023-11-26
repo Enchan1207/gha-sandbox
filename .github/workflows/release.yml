@@ -2,7 +2,7 @@
 # リリース時に走るワークフロー
 #
 
-name: on release
+name: release information
 
 on:
   release:
@@ -14,5 +14,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to PyPI
-        run: echo "Release!"
+      - name: Show release ref
+        run: echo "Release ref;${{ github.ref }}"
