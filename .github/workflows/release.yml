@@ -15,4 +15,4 @@ jobs:
 
     steps:
       - name: Show release ref
-        run: echo "Release ref;${{ github.ref }}"
+        run: echo "::notice::Release ref;${{ github.ref }}"
