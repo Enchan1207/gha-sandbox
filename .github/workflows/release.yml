@@ -26,23 +26,25 @@ jobs:
           git config user.name "github-actions[bot]"
 
       - name: identify branch name from ref
-        id: get_branch
+        id: release_info
         run: |
-          echo "${{ github.ref }}"
-          branchName=$( echo "${{ github.ref }}" \
+          githubRef=${{ github.event.release.tag_name  }}
+          echo "$githubRef"
+          branchName=$( echo "$githubRef" \
             | sed -rn "/${{ env.release_branch_pattern }}/p" \
             | sed -r "s/${{ env.release_branch_pattern }}/\1/" )
           if [ -n "$branchName" ]; then
-            echo "switch to branch $branchName (from ref ${{ github.ref }})"
+            echo "switch to branch $branchName (from ref $githubRef)"
           else
-            echo "::error::ref ${{ github.ref }} is not valid."
+            echo "::error::ref $githubRef is not valid."
             exit 1
           fi
-          echo "name=$branchName" >> "$GITHUB_OUTPUT"
+          echo "ref=$githubRef" >> "$GITHUB_OUTPUT"
+          echo "branch_name=$branchName" >> "$GITHUB_OUTPUT"
 
       - name: switch and pull to specified release branch
         run: |
-          branchName=${{ steps.get_branch.outputs.name }}
+          branchName=${{ steps.release_info.outputs.branch_name }}
           git fetch origin $branchName && isRemoteExists=1 || isRemoteExists=0
           if [ $isRemoteExists -eq 1 ]; then
             echo "Remote branch $branchName already exists. switching..."
@@ -60,10 +62,10 @@ jobs:
 
       - name: merge ref and commit
         run: |
-          version=$( echo "${{ github.ref }}" \
+          version=$( echo "${{ steps.release_info.outputs.ref }}" \
             | sed -rn "/${{ env.release_version_pattern }}/p" \
             | sed -r "s/${{ env.release_version_pattern }}/\1/" )
-          git merge --allow-unrelated-histories -m "[Update] new release: $version" ${{ github.ref }}
+          git merge --allow-unrelated-histories -m "[Update] new release: $version" ${{ steps.release_info.outputs.ref }}
 
       - name: push
-        run: git push origin ${{ steps.get_branch.outputs.name }}
+        run: git push origin ${{ steps.release_info.outputs.branch_name }}
