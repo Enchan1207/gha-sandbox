@@ -2,7 +2,7 @@
 # 自分自身をアクションとして呼び出す
 #
 
-on: push
+on: workflow_dispatch #push
 
 jobs:
   self_invocation:
