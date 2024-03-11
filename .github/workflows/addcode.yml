@@ -33,6 +33,7 @@ jobs:
       - name: add file, commit, and push
         run: |
           date>date.txt
+          rm -rf lua
           git clone --depth=1 https://github.com/lua/lua
           rm -rf lua/.git
           git add -f lua
