@@ -34,6 +34,7 @@ jobs:
         run: |
           date>date.txt
           git clone --depth=1 https://github.com/lua/lua
+          rm -rf lua/.git
           git add -f lua
           git add date.txt
           git commit -m "[Modify] date (automated) [no ci]"
