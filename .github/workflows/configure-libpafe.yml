@@ -1,0 +1,56 @@
+name: configure libpafe
+
+on: push
+
+jobs:
+  cmake_help:
+    if: contains(github.event.head_commit.message, 'configure-libpafe')
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Setup git
+        run: |
+          set -x
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Install libusb from apt
+        if: startsWith(matrix.os, 'ubuntu')
+        run: sudo apt-get install "libusb-1.0-*"
+
+      - name: Cache libusb archive
+        if: startsWith(matrix.os, 'windows')
+        id: cache-libusb
+        uses: actions/cache@v2
+        with:
+          path: libusb-latest.7z
+          key: libusb-latest
+
+      - name: Install libusb from GitHub Release
+        if: startsWith(matrix.os, 'windows') && steps.cache-libusb.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          binaryURL=$(curl -H 'Accept: application/vnd.github.v3+json' https://api.github.com/repos/libusb/libusb/releases/latest | jq -r '.assets[] | select(.browser_download_url | endswith("7z")) .browser_download_url')
+          curl -L $binaryURL -o libusb-latest.7z
+
+      - name: Extract libusb archive
+        if: startsWith(matrix.os, 'windows')
+        shell: bash
+        run: 7z x libusb-latest.7z -olibusb-latest
+
+      - name: Clone libpafe
+        run: git clone https://github.com/Enchan1207/libpafe
+
+      - name: Configure CMake on Ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
+        working-directory: ${{github.workspace}}/libpafe/build
+        run: cmake .. -DLIBPAFE_BUILD_SAMPLES=ON -DLIBPAFE_BUILD_SHARED_LIBS=ON
+
+      - name: Configure CMake on Windows
+        if: startsWith(matrix.os, 'windows')
+        working-directory: ${{github.workspace}}/libpafe/build
+        run: echo "Currently it does nothing"
