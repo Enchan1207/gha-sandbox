@@ -45,7 +45,15 @@ jobs:
         shell: bash
         run: 7z x libusb-latest.7z -olibusb-latest
 
+      - name: Cache libpafe repository
+        id: cache-libpafe
+        uses: actions/cache@v2
+        with:
+          path: libpafe
+          key: ${{ matrix.os }}-libpafe
+
       - name: Clone libpafe
+        if: steps.cache-libpafe.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/Enchan1207/libpafe
           mkdir -p libpafe/build
@@ -61,7 +69,9 @@ jobs:
         working-directory: ${{github.workspace}}/libpafe/build
         run: |
           libusbRoot=../../libusb-latest
+          ls -R $libusbRoot
           libusbPrefix="$(realpath $libusbRoot/MinGW64/dll);$(realpath $libusbRoot/MinGW32/dll);$(realpath $libusbRoot/include)"
+          echo $libusbPrefix
           cmake .. \
             -DCMAKE_GENERATOR="MinGW Makefiles" \
             -DCMAKE_PREFIX_PATH="$libusbPrefix" \
