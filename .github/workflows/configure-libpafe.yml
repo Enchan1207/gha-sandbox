@@ -63,4 +63,4 @@ jobs:
       - name: Build
         if: startsWith(matrix.os, 'ubuntu')
         working-directory: ${{github.workspace}}/libpafe/build
-        run: cmake --build .
+        run: cmake --build . -v
