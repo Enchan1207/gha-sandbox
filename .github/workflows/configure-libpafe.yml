@@ -3,7 +3,7 @@ name: configure libpafe
 on: push
 
 jobs:
-  cmake_help:
+  configure_libpafe:
     if: contains(github.event.head_commit.message, 'configure-libpafe')
     strategy:
       matrix:
@@ -12,6 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Setup git
         run: |
           set -x
