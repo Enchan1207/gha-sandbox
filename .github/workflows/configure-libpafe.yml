@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup git
+        shell: bash
         run: |
           set -x
           git config user.name github-actions[bot]
