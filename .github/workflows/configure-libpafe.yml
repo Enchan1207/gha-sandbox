@@ -45,7 +45,9 @@ jobs:
         run: 7z x libusb-latest.7z -olibusb-latest
 
       - name: Clone libpafe
-        run: git clone https://github.com/Enchan1207/libpafe
+        run: |
+          git clone https://github.com/Enchan1207/libpafe
+          mkdir -p libpafe/build
 
       - name: Configure CMake on Ubuntu
         if: startsWith(matrix.os, 'ubuntu')
@@ -56,3 +58,8 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         working-directory: ${{github.workspace}}/libpafe/build
         run: echo "Currently it does nothing"
+
+      - name: Build
+        if: startsWith(matrix.os, 'ubuntu')
+        working-directory: ${{github.workspace}}/libpafe/build
+        run: cmake --build .
