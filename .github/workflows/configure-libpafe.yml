@@ -57,8 +57,15 @@ jobs:
 
       - name: Configure CMake on Windows
         if: startsWith(matrix.os, 'windows')
+        shell: bash
         working-directory: ${{github.workspace}}/libpafe/build
-        run: echo "Currently it does nothing"
+        run: |
+          libusbRoot=${{github.workspace}}/libusb-latest
+          libusbPrefix="$(realpath $libusbRoot/MinGW64/dll);$(realpath $libusbRoot/MinGW32/dll);$(realpath $libusbRoot/include)"
+          cmake .. \
+            -DCMAKE_GENERATOR="MinGW Makefiles" \
+            -DCMAKE_PREFIX_PATH="$libusbPrefix" \
+            -DLIBPAFE_BUILD_SAMPLES=ON -DLIBPAFE_BUILD_SHARED_LIBS=ON
 
       - name: Build
         if: startsWith(matrix.os, 'ubuntu')
