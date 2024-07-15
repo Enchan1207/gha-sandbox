@@ -60,7 +60,7 @@ jobs:
         shell: bash
         working-directory: ${{github.workspace}}/libpafe/build
         run: |
-          libusbRoot=${{github.workspace}}/libusb-latest
+          libusbRoot=../../libusb-latest
           libusbPrefix="$(realpath $libusbRoot/MinGW64/dll);$(realpath $libusbRoot/MinGW32/dll);$(realpath $libusbRoot/include)"
           cmake .. \
             -DCMAKE_GENERATOR="MinGW Makefiles" \
@@ -68,6 +68,5 @@ jobs:
             -DLIBPAFE_BUILD_SAMPLES=ON -DLIBPAFE_BUILD_SHARED_LIBS=ON
 
       - name: Build
-        if: startsWith(matrix.os, 'ubuntu')
         working-directory: ${{github.workspace}}/libpafe/build
         run: cmake --build . -v
